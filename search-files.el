@@ -26,11 +26,19 @@
 (defun search-files-for-string-or-definition (string search-for-definition-p)
   (search-files
    (if search-for-definition-p
-       ;; TODO This is python-specific; do the right thing according to
-       ;; major-mode.
-       (format "\\(def\\|class\\) %s(" string)
+       (search-files-get-definition-regex string major-mode)
      string)
    (projectile-project-root)))
+
+(defun search-files-get-definition-regex (string major-mode)
+  "Regular expression matching function/class etc definition for `string'."
+  (case major-mode
+    ('python-mode
+     (format "\\(def\\|class\\) \\+%s(" string))
+    ('emacs-lisp-mode
+     (format "(defun %s \\+(" string))
+    (t
+     (error "No definition regex for major mode %s" major-mode))))
 
 (defun search-files (string directory)
   (let ((backend (if (eq (projectile-project-vcs) 'git) 'git-grep 'ag)))
