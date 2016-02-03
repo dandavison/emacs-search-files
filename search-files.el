@@ -5,6 +5,21 @@
 
 (defvar search-files-results-buffer-name "*search*")
 
+(defvar search-files-mode-map (make-sparse-keymap))
+
+(define-derived-mode search-files-mode
+    compilation-mode "search-files"
+  "Major mode for search-files results buffer.
+\\{search-files-mode-map}"
+
+  (add-hook 'compilation-finish-functions 'search-files-clean-up-compilation-buffer))
+
+(define-key search-files-mode-map "/" 'search-files-delete-non-matching-lines)
+(define-key search-files-mode-map [(control /)] 'search-files-undo)
+(define-key search-files-mode-map "\C-_" 'search-files-undo)
+(define-key search-files-mode-map "\C-xu" 'search-files-undo)
+(define-key search-files-mode-map [(super z)] 'search-files-undo)
+
 (defun search-files-read-from-minibuffer (&optional search-for-definition-p)
   "Search for word entered in minibuffer.
 
@@ -71,7 +86,7 @@
       (save-excursion
         (insert (shell-command-to-string
                  (search-files-make-search-command string backend)))))
-    (compilation-mode)
+    (search-files-mode)
     (when (eq (count-lines (point-min) (point-max)) 1)
       (compile-goto-error))))
 
@@ -103,7 +118,5 @@
                        (forward-line 1)
                        (point-at-bol))
                      (point)))))
-
-(add-hook 'compilation-finish-functions 'search-files-clean-up-compilation-buffer)
 
 (provide 'search-files)
