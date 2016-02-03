@@ -14,7 +14,7 @@
 
   (add-hook 'compilation-finish-functions 'search-files-clean-up-compilation-buffer))
 
-(define-key search-files-mode-map "/" 'search-files-delete-non-matching-lines)
+(define-key search-files-mode-map "/" 'search-files-filter-results)
 (define-key search-files-mode-map [(control /)] 'search-files-undo)
 (define-key search-files-mode-map "\C-_" 'search-files-undo)
 (define-key search-files-mode-map "\C-xu" 'search-files-undo)
@@ -38,15 +38,13 @@
    (or (thing-at-point 'symbol) (error "No word at point"))
    search-for-definition-p))
 
-(defun search-files-delete-matching-lines ()
-  "Filter search results by excluding matching lines"
-  (interactive)
-  (search-files-do-in-results-buffer 'delete-matching-lines))
+(defun search-files-filter-results (&optional arg)
+  "Filter search results, retaining matching lines.
 
-(defun search-files-delete-non-matching-lines ()
-  "Filter search results by retaining only matching lines"
-  (interactive)
-  (search-files-do-in-results-buffer 'delete-non-matching-lines))
+With prefix argument, retain non-matching lines."
+  (interactive "P")
+  (search-files-do-in-results-buffer
+   (if arg 'delete-matching-lines 'delete-non-matching-lines)))
 
 (defun search-files-undo ()
   "Undo in search results buffer"
