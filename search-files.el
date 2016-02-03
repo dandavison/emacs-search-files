@@ -1,7 +1,14 @@
-;;; search-files.el --- search files using git grep or other backends
+;;; search-files.el --- search files using `git grep` or other backends
+;; Version: 0.0.0
+;; Author: dandavison7@gmail.com
+;; Package-Requires: ((projectile "0.10.0"))
+;; Keywords: search, git, projectile
+;; URL: https://github.com/dandavison/emacs-search-files
+
+(require 'cl)
 (require 'projectile)
 
-(defvar search-files-ag-arguments)
+(defvar search-files-ag-arguments nil)
 
 (defvar search-files-results-buffer-name "*search*")
 
@@ -20,6 +27,7 @@
 (define-key search-files-mode-map "\C-xu" 'search-files-undo)
 (define-key search-files-mode-map [(super z)] 'search-files-undo)
 
+;;;###autoload
 (defun search-files-read-from-minibuffer (&optional search-for-definition-p)
   "Search for word entered in minibuffer.
 
@@ -29,6 +37,7 @@
    (read-from-minibuffer "Regexp: ")
    search-for-definition-p))
 
+;;;###autoload
 (defun search-files-thing-at-point (&optional search-for-definition-p)
   "Search for word at point.
 
@@ -118,3 +127,4 @@ With prefix argument, retain non-matching lines."
                      (point)))))
 
 (provide 'search-files)
+;;; search-files.el ends here
