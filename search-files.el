@@ -23,6 +23,27 @@
    (or (thing-at-point 'symbol) (error "No word at point"))
    search-for-definition-p))
 
+(defun search-files-delete-matching-lines ()
+  "Filter search results by excluding matching lines"
+  (interactive)
+  (search-files-do-in-results-buffer 'delete-matching-lines))
+
+(defun search-files-delete-non-matching-lines ()
+  "Filter search results by retaining only matching lines"
+  (interactive)
+  (search-files-do-in-results-buffer 'delete-non-matching-lines))
+
+(defun search-files-undo ()
+  "Undo in search results buffer"
+  (interactive)
+  (search-files-do-in-results-buffer 'undo))
+
+(defun search-files-do-in-results-buffer (fn)
+  (let ((buffer-read-only nil))
+    (save-excursion
+      (goto-char (point-min))
+      (call-interactively fn))))
+
 (defun search-files-for-string-or-definition (string search-for-definition-p)
   (search-files
    (if search-for-definition-p
