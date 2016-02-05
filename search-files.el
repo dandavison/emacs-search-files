@@ -19,7 +19,8 @@
   "Major mode for search-files results buffer.
 \\{search-files-mode-map}"
 
-  (add-hook 'compilation-finish-functions 'search-files-clean-up-compilation-buffer))
+  (add-hook 'compilation-finish-functions
+            'search-files-clean-up-compilation-buffer nil t))
 
 (define-key search-files-mode-map "/" 'search-files-filter-results)
 (define-key search-files-mode-map [(control /)] 'search-files-undo)
