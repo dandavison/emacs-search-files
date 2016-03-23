@@ -78,7 +78,7 @@ With prefix argument, retain non-matching lines."
   "Regular expression matching function/class etc definition for `string'."
   (case major-mode
     ('python-mode
-     (format "\\(def\\|class\\) \\+%s(" string))
+     (format "\\(def\\|class\\) \\+%s[^(]*(" string))
     ('emacs-lisp-mode
      (format "(defun %s \\+(" string))
     (t
