@@ -15,7 +15,7 @@
 (defvar search-files-mode-map (make-sparse-keymap))
 
 (define-derived-mode search-files-mode
-    compilation-mode "search-files"
+  compilation-mode "search-files"
   "Major mode for search-files results buffer.
 \\{search-files-mode-map}"
 
