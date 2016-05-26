@@ -72,7 +72,8 @@ With prefix argument, retain non-matching lines."
    (if search-for-definition-p
        (search-files-get-definition-regex string major-mode)
      string)
-   (projectile-project-root)))
+   (projectile-project-root)
+   (if (eq (projectile-project-vcs) 'git) 'git-grep 'ag)))
 
 (defun search-files-get-definition-regex (string major-mode)
   "Regular expression matching function/class etc definition for `string'."
@@ -82,21 +83,27 @@ With prefix argument, retain non-matching lines."
     ('emacs-lisp-mode
      (format "(defun %s \\+(" string))
     (t
-     (error "No definition regex for major mode %s" major-mode))))
+     (message "No definition regex for major mode %s; assuming python was intended" major-mode)
+     (search-files-get-definition-regex string 'python-mode))))
 
-(defun search-files (string directory)
-  (let ((backend (if (eq (projectile-project-vcs) 'git) 'git-grep 'ag)))
-    (switch-to-buffer search-files-results-buffer-name)
-    (delete-other-windows)
-    (setq default-directory directory)
-    (let ((buffer-read-only nil))
-      (delete-region (point-min) (point-max))
-      (save-excursion
-        (insert (shell-command-to-string
-                 (search-files-make-search-command string backend)))))
-    (search-files-mode)
-    (when (eq (count-lines (point-min) (point-max)) 1)
-      (compile-goto-error))))
+(defun search-files (string directory backend)
+  (switch-to-buffer search-files-results-buffer-name)
+  (delete-other-windows)
+  (setq default-directory directory)
+  (let ((buffer-read-only nil))
+    (delete-region (point-min) (point-max))
+    (save-excursion
+      (insert (search-files-do-search string backend))))
+  (search-files-mode)
+  (when (eq (count-lines (point-min) (point-max)) 1)
+    (compile-goto-error)))
+
+(defun search-files-do-search (string backend)
+  (case backend
+    ((ag git-grep)
+     (shell-command-to-string
+      (search-files-make-search-command string backend)))
+    (t (error "Invalid backend"))))
 
 (defun search-files-make-search-command (string backend)
   (mapconcat
