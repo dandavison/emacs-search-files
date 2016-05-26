@@ -48,6 +48,15 @@
    (or (thing-at-point 'symbol) (error "No word at point"))
    search-for-definition-p))
 
+;;;###autoload
+(defun search-files-by-name ()
+  "Search for file names matching regex entered in minibuffer."
+  (interactive)
+  (search-files
+   (read-from-minibuffer "File name regex: ")
+   (projectile-project-root)
+   'name))
+
 (defun search-files-filter-results (&optional arg)
   "Filter search results, retaining matching lines.
 
@@ -103,6 +112,11 @@ With prefix argument, retain non-matching lines."
     ((ag git-grep)
      (shell-command-to-string
       (search-files-make-search-command string backend)))
+    ('name
+     (replace-regexp-in-string
+      "$" ":1:"
+      (shell-command-to-string
+       (format "git ls | grep '%s'" string))))
     (t (error "Invalid backend"))))
 
 (defun search-files-make-search-command (string backend)
