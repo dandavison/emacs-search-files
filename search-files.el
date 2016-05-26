@@ -116,7 +116,7 @@ With prefix argument, retain non-matching lines."
      (replace-regexp-in-string
       "$" ":1:"
       (shell-command-to-string
-       (format "git ls | grep '%s'" string))))
+       (format "git ls-files | grep '%s'" string))))
     (t (error "Invalid backend"))))
 
 (defun search-files-make-search-command (string backend)
