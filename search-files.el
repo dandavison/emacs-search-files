@@ -14,6 +14,9 @@
 
 (defvar search-files-mode-map (make-sparse-keymap))
 
+(defvar search-files-max-line-width 300
+  "Output lines will be truncated to this width to avoid slowing down emacs")
+
 (define-derived-mode search-files-mode
   compilation-mode "search-files"
   "Major mode for search-files results buffer.
@@ -110,12 +113,12 @@ With prefix argument, retain non-matching lines."
 (defun search-files-do-search (string backend)
   (case backend
     ((ag git-grep)
-     (shell-command-to-string
+     (search-files-shell-command-to-string
       (search-files-make-search-command string backend)))
     ('name
      (replace-regexp-in-string
       "$" ":1:"
-      (shell-command-to-string
+      (search-files-shell-command-to-string
        (format "git ls-files | grep '%s'" string))))
     (t (error "Invalid backend"))))
 
@@ -131,6 +134,15 @@ With prefix argument, retain non-matching lines."
       (list "git" "grep" "-n" "--exclude-standard" "--no-index" string))
      (t (error "Invalid backend")))
    " "))
+
+(defun search-files-shell-command-to-string (cmd)
+  "Call shell command and do some processing before returning output
+
+   Truncates lines to `search-files-max-line-width'"
+  (mapconcat
+   (lambda (string) (truncate-string-to-width string search-files-max-line-width))
+   (split-string (shell-command-to-string cmd) "[\n\r]+")
+   "\n"))
 
 (defun search-files-clean-up-compilation-buffer (buf status)
   (with-current-buffer buf
