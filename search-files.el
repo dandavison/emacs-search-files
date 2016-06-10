@@ -36,7 +36,8 @@
 (defun search-files-read-from-minibuffer (&optional search-for-definition-p)
   "Search for word entered in minibuffer.
 
-  With prefix arg search for definition."
+  With prefix arg search for definition (prefix match).
+  With two prefix args definition match must be exact"
   (interactive "P")
   (search-files-for-string-or-definition
    (read-from-minibuffer "Regexp: ")
@@ -46,7 +47,8 @@
 (defun search-files-thing-at-point (&optional search-for-definition-p)
   "Search for word at point.
 
-  With prefix arg search for definition."
+  With prefix arg search for definition (prefix match).
+  With two prefix args definition match must be exact"
   (interactive "P")
   (search-files-for-string-or-definition
    (or (thing-at-point 'symbol) (error "No word at point"))
@@ -88,21 +90,24 @@ With prefix argument, retain non-matching lines."
 (defun search-files-for-string-or-definition (string search-for-definition-p)
   (search-files
    (if search-for-definition-p
-       (search-files-get-definition-regex string major-mode)
+       (search-files-get-definition-regex
+        search-for-definition-p string major-mode)
      string)
    (projectile-project-root)
    (if (eq (projectile-project-vcs) 'git) 'git-grep 'ag)))
 
-(defun search-files-get-definition-regex (string major-mode)
+(defun search-files-get-definition-regex (arg string major-mode)
   "Regular expression matching function/class etc definition for `string'."
-  (case major-mode
-    ('python-mode
-     (format "\\(def\\|class\\) \\+%s[^(]*(" string))
-    ('emacs-lisp-mode
-     (format "(defun %s \\+(" string))
-    (t
-     (message "No definition regex for major mode %s; assuming python was intended" major-mode)
-     (search-files-get-definition-regex string 'python-mode))))
+  (let ((suffix (if (equal arg '(4)) "[^ (]*" "")))
+    (case major-mode
+      ('python-mode
+       (format
+        "\\(def\\|class\\) \\+%s%s(" string suffix))
+      ('emacs-lisp-mode
+       (format "(defun \\+%s%s \\+(" string suffix))
+      (t
+       (message "No definition regex for major mode %s; assuming python was intended" major-mode)
+       (search-files-get-definition-regex arg string 'python-mode)))))
 
 (defun search-files (string directory backend)
   (switch-to-buffer search-files-results-buffer-name)
