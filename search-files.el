@@ -27,6 +27,7 @@
 
 (define-key search-files-mode-map "/" 'search-files-filter-results)
 (define-key search-files-mode-map [(control /)] 'search-files-undo)
+(define-key search-files-mode-map "\C-k" 'search-files-kill-line)
 (define-key search-files-mode-map "\C-_" 'search-files-undo)
 (define-key search-files-mode-map "\C-xu" 'search-files-undo)
 (define-key search-files-mode-map [(super z)] 'search-files-undo)
@@ -66,17 +67,22 @@
 With prefix argument, retain non-matching lines."
   (interactive "P")
   (search-files-do-in-results-buffer
-   (if arg 'delete-matching-lines 'delete-non-matching-lines)))
+   (if arg 'delete-matching-lines 'delete-non-matching-lines) 'from-beginning))
+
+(defun search-files-kill-line ()
+  "Kill line in search results buffer"
+  (interactive)
+  (search-files-do-in-results-buffer 'kill-line))
 
 (defun search-files-undo ()
   "Undo in search results buffer"
   (interactive)
   (search-files-do-in-results-buffer 'undo))
 
-(defun search-files-do-in-results-buffer (fn)
+(defun search-files-do-in-results-buffer (fn &optional do-from-beginning)
   (let ((buffer-read-only nil))
     (save-excursion
-      (goto-char (point-min))
+      (when do-from-beginning (goto-char (point-min)))
       (call-interactively fn))))
 
 (defun search-files-for-string-or-definition (string search-for-definition-p)
