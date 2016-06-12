@@ -87,6 +87,16 @@ With prefix argument, retain non-matching lines."
       (when do-from-beginning (goto-char (point-min)))
       (call-interactively fn))))
 
+(defun search-files-project-backend ()
+  "Return search backend for project.
+
+   Like `projectile-project-vcs', but git is the only VCS
+   possibility, and does not search up the tree beyond the
+   project root but instead defaults to ag."
+  (if (file-exists-p (expand-file-name ".git" (projectile-project-root)))
+      'git-grep
+    'ag))
+
 (defun search-files-for-string-or-definition (string search-for-definition-p)
   (search-files
    (if search-for-definition-p
@@ -94,7 +104,7 @@ With prefix argument, retain non-matching lines."
         search-for-definition-p string major-mode)
      string)
    (projectile-project-root)
-   (if (eq (projectile-project-vcs) 'git) 'git-grep 'ag)))
+   (search-files-project-backend)))
 
 (defun search-files-get-definition-regex (arg string major-mode)
   "Regular expression matching function/class etc definition for `string'."
