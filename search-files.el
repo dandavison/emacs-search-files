@@ -8,7 +8,7 @@
 (require 'cl)
 (require 'projectile)
 
-(defvar search-files-ag-arguments nil)
+(defvar search-files-ag-arguments '("-z"))
 
 (defvar search-files-results-buffer-name "*search*")
 
