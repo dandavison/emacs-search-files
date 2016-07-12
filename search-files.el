@@ -182,6 +182,20 @@ With prefix argument, retain non-matching lines."
                          (point-at-bol))
                        (point))))))
 
+(require 'helm)
+
+(defvar helm-filter-mode-buffer "*helm filter*")
+
+(defun helm-filter-mode-action (-ignored)
+  (switch-to-buffer helm-filter-mode-buffer)
+  (let ((buffer-read-only nil))
+    (delete-region (point-min) (point-max))
+    (insert
+     (with-current-buffer helm-last-buffer
+       (search-files-truncate-lines (buffer-string))))
+    (goto-char (point-min))
+    (search-files-clean-up-compilation-buffer)
+    (search-files-mode)))
 
 (provide 'search-files)
 ;;; search-files.el ends here
