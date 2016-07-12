@@ -11,6 +11,10 @@ available in the results buffer:
 | C-u / | Discard results matching a pattern |
 
 
+This package depends on https://github.com/dandavison/emacs-filter-results for
+the filter/exclude mode buffer. You must `require` that package before
+`require`ing this package.
+
 ###### Commands
 
 |                                     |                                                     |
