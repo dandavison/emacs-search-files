@@ -134,13 +134,15 @@ With prefix argument, retain non-matching lines."
 (defun search-files-do-search (string backend)
   (case backend
     ((ag git-grep)
-     (search-files-shell-command-to-string
-      (search-files-make-search-command string backend)))
+     (search-files-truncate-lines
+      (shell-command-to-string
+       (search-files-make-search-command string backend))))
     ('name
      (replace-regexp-in-string
       "$" ":1:"
-      (search-files-shell-command-to-string
-       (format "git ls-files | grep '%s'" string))))
+      (search-files-truncate-lines
+       (shell-command-to-string
+        (format "git ls-files | grep '%s'" string)))))
     (t (error "Invalid backend"))))
 
 (defun search-files-make-search-command (string backend)
@@ -156,30 +158,30 @@ With prefix argument, retain non-matching lines."
      (t (error "Invalid backend")))
    " "))
 
-(defun search-files-shell-command-to-string (cmd)
-  "Call shell command and do some processing before returning output
-
-   Truncates lines to `search-files-max-line-width'"
+(defun search-files-truncate-lines (string)
+  "Truncates lines to `search-files-max-line-width'"
   (mapconcat
-   (lambda (string) (truncate-string-to-width string search-files-max-line-width))
-   (split-string (shell-command-to-string cmd) "[\n\r]+")
+   (lambda (line) (truncate-string-to-width line search-files-max-line-width))
+   (split-string string "[\n\r]+")
    "\n"))
 
-(defun search-files-clean-up-compilation-buffer (buf status)
-  (with-current-buffer buf
+(defun search-files-clean-up-compilation-buffer (&optional buf ignored)
+  (with-current-buffer (or buf (current-buffer))
     (let ((buffer-read-only nil)
           (grep-match-re "^[^: ]+:[0-9]+:"))
-      (goto-char (point-min))
-      (delete-region (point)
-                     (progn
-                       (re-search-forward grep-match-re)
-                       (point-at-bol)))
-      (goto-char (point-max))
-      (delete-region (progn
-                       (re-search-backward grep-match-re)
-                       (forward-line 1)
-                       (point-at-bol))
-                     (point)))))
+      (save-excursion
+        (goto-char (point-min))
+        (delete-region (point)
+                       (progn
+                         (re-search-forward grep-match-re)
+                         (point-at-bol)))
+        (goto-char (point-max))
+        (delete-region (progn
+                         (re-search-backward grep-match-re)
+                         (forward-line 1)
+                         (point-at-bol))
+                       (point))))))
+
 
 (provide 'search-files)
 ;;; search-files.el ends here
